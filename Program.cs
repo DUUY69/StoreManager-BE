@@ -11,8 +11,13 @@ var builder = WebApplication.CreateBuilder(args);
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Nếu chưa có Azure SQL: để trống ConnectionStrings__DefaultConnection → dùng In-Memory (có sẵn user admin@cafe.vn / 123456)
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (!string.IsNullOrWhiteSpace(connectionString))
+    builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
+else
+    builder.Services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase("AdminDashboard"));
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -77,6 +82,30 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Khi chạy In-Memory (chưa có Azure SQL): tạo DB và seed user admin để demo
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.EnsureCreated();
+        if (!db.Users.Any())
+        {
+            db.Users.Add(new User
+            {
+                Email = "admin@cafe.vn",
+                Name = "Admin Cafe",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
+                Role = "Admin",
+                Status = "Active",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            });
+            db.SaveChanges();
+        }
+    }
+}
 
 if (app.Environment.IsDevelopment())
 {
