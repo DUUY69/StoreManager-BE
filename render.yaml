@@ -1,0 +1,9 @@
+# Render Blueprint - Backend API (.NET 8 via Docker)
+# Repo: https://github.com/DUUY69/StoreManager-BE
+services:
+  - type: web
+    name: storemanager-be-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    # Biến môi trường cấu hình trong Dashboard: Environment
+    # Bắt buộc: ConnectionStrings__DefaultConnection, Jwt__Key, CORS__ORIGINS
