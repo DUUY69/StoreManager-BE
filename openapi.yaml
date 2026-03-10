@@ -1,0 +1,749 @@
+openapi: 3.0.3
+info:
+  title: Admin Dashboard API
+  description: API cho hệ thống đặt hàng đa NCC (Multi-Supplier Order). Chi tiết xem API-FE-LIEN-KET.md
+  version: 1.0.0
+
+servers:
+  - url: /api
+    description: Base path API
+
+tags:
+  - name: Auth
+  - name: Suppliers
+  - name: Categories
+  - name: Products
+  - name: Stores
+  - name: Users
+  - name: Orders
+  - name: SupplierOrders
+  - name: Reports
+
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Đăng nhập
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/User' }
+                  token: { type: string }
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Lấy thông tin user hiện tại
+      security: [{ Bearer: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /suppliers:
+    get:
+      tags: [Suppliers]
+      parameters:
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { type: string, enum: [Active, Inactive] }
+      security: [{ Bearer: [] }]
+      responses:
+        '200':
+          description: Danh sách NCC
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Supplier' }
+    post:
+      tags: [Suppliers]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SupplierInput' }
+      security: [{ Bearer: [] }]
+      responses:
+        '201':
+          description: Đã tạo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Supplier' }
+
+  /suppliers/{id}:
+    put:
+      tags: [Suppliers]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SupplierInput' }
+      security: [{ Bearer: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Supplier' }
+    delete:
+      tags: [Suppliers]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      security: [{ Bearer: [] }]
+      responses:
+        '204': { description: Đã xóa }
+
+  /categories:
+    get:
+      tags: [Categories]
+      security: [{ Bearer: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Category' }
+    post:
+      tags: [Categories]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CategoryInput' }
+      security: [{ Bearer: [] }]
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+
+  /categories/{id}:
+    put:
+      tags: [Categories]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CategoryInput' }
+      security: [{ Bearer: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+    delete:
+      tags: [Categories]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      security: [{ Bearer: [] }]
+      responses:
+        '204': { description: Đã xóa }
+
+  /products:
+    get:
+      tags: [Products]
+      parameters:
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: supplierId
+          in: query
+          schema: { type: integer }
+        - name: categoryId
+          in: query
+          schema: { type: integer }
+        - name: status
+          in: query
+          schema: { type: string, enum: [Active, Inactive] }
+      security: [{ Bearer: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Product' }
+    post:
+      tags: [Products]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProductInput' }
+      security: [{ Bearer: [] }]
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+
+  /products/{id}:
+    put:
+      tags: [Products]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProductInput' }
+      security: [{ Bearer: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+    delete:
+      tags: [Products]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      security: [{ Bearer: [] }]
+      responses:
+        '204': { description: Đã xóa }
+
+  /stores:
+    get:
+      tags: [Stores]
+      security: [{ Bearer: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Store' }
+    post:
+      tags: [Stores]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StoreInput' }
+      security: [{ Bearer: [] }]
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Store' }
+
+  /stores/{id}:
+    put:
+      tags: [Stores]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StoreInput' }
+      security: [{ Bearer: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Store' }
+    delete:
+      tags: [Stores]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      security: [{ Bearer: [] }]
+      responses:
+        '204': { description: Đã xóa }
+
+  /users:
+    get:
+      tags: [Users]
+      security: [{ Bearer: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/User' }
+    post:
+      tags: [Users]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserInput' }
+      security: [{ Bearer: [] }]
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+  /users/{id}:
+    put:
+      tags: [Users]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserInput' }
+      security: [{ Bearer: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+    delete:
+      tags: [Users]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      security: [{ Bearer: [] }]
+      responses:
+        '204': { description: Đã xóa }
+
+  /orders:
+    get:
+      tags: [Orders]
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: storeId
+          in: query
+          schema: { type: integer }
+        - name: supplierId
+          in: query
+          schema: { type: integer }
+        - name: dateFrom
+          in: query
+          schema: { type: string, format: date }
+        - name: dateTo
+          in: query
+          schema: { type: string, format: date }
+      security: [{ Bearer: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Order' }
+    post:
+      tags: [Orders]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OrderCreateInput' }
+      security: [{ Bearer: [] }]
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+
+  /orders/{id}:
+    get:
+      tags: [Orders]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      security: [{ Bearer: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+
+  /orders/{id}/accept:
+    patch:
+      tags: [Orders]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      security: [{ Bearer: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+
+  /orders/{id}/reject:
+    patch:
+      tags: [Orders]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      security: [{ Bearer: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+
+  /orders/{id}/confirm-total:
+    patch:
+      tags: [Orders]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      security: [{ Bearer: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+
+  /order-suppliers/{id}/confirm-receive:
+    patch:
+      tags: [Orders]
+      summary: Store xác nhận nhận hàng + upload ảnh (multipart)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                received:
+                  type: array
+                  items: { type: string, format: binary }
+                invoice:
+                  type: array
+                  items: { type: string, format: binary }
+      security: [{ Bearer: [] }]
+      responses:
+        '200': { description: OK }
+
+  /supplier-orders:
+    get:
+      tags: [SupplierOrders]
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: dateFrom
+          in: query
+          schema: { type: string, format: date }
+        - name: dateTo
+          in: query
+          schema: { type: string, format: date }
+      security: [{ Bearer: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/OrderSupplier' }
+
+  /supplier-orders/{id}:
+    get:
+      tags: [SupplierOrders]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      security: [{ Bearer: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderSupplier' }
+
+  /supplier-orders/{id}/status:
+    patch:
+      tags: [SupplierOrders]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [Confirmed, Rejected, Partial, Delivering, Delivered]
+      security: [{ Bearer: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderSupplier' }
+
+  /reports/summary:
+    get:
+      tags: [Reports]
+      parameters:
+        - name: dateFrom
+          in: query
+          schema: { type: string, format: date }
+        - name: dateTo
+          in: query
+          schema: { type: string, format: date }
+      security: [{ Bearer: [] }]
+      responses:
+        '200':
+          description: Tổng hợp báo cáo theo NCC, theo cửa hàng
+
+  /dashboard/stats:
+    get:
+      tags: [Reports]
+      security: [{ Bearer: [] }]
+      responses:
+        '200':
+          description: Số liệu dashboard (tổng đơn, đang giao, đơn gần đây)
+
+components:
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token trả về từ POST /auth/login
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        email: { type: string }
+        name: { type: string }
+        role: { type: string, enum: [Admin, StoreUser, SupplierUser] }
+        storeId: { type: integer, nullable: true }
+        supplierId: { type: integer, nullable: true }
+        status: { type: string }
+    UserInput:
+      type: object
+      properties:
+        email: { type: string }
+        name: { type: string }
+        role: { type: string }
+        storeId: { type: integer, nullable: true }
+        supplierId: { type: integer, nullable: true }
+        status: { type: string }
+
+    Supplier:
+      type: object
+      properties:
+        id: { type: integer }
+        code: { type: string }
+        name: { type: string }
+        contact: { type: string }
+        email: { type: string }
+        address: { type: string }
+        status: { type: string }
+    SupplierInput:
+      type: object
+      properties:
+        code: { type: string }
+        name: { type: string }
+        contact: { type: string }
+        email: { type: string }
+        address: { type: string }
+        status: { type: string }
+
+    Category:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: string }
+    CategoryInput:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+
+    Product:
+      type: object
+      properties:
+        id: { type: integer }
+        code: { type: string }
+        name: { type: string }
+        supplierId: { type: integer }
+        categoryId: { type: integer }
+        unit: { type: string }
+        price: { type: number }
+        status: { type: string }
+    ProductInput:
+      type: object
+      properties:
+        code: { type: string }
+        name: { type: string }
+        supplierId: { type: integer }
+        categoryId: { type: integer }
+        unit: { type: string }
+        price: { type: number }
+        status: { type: string }
+
+    Store:
+      type: object
+      properties:
+        id: { type: integer }
+        code: { type: string }
+        name: { type: string }
+        address: { type: string }
+        phone: { type: string }
+        status: { type: string }
+    StoreInput:
+      type: object
+      properties:
+        code: { type: string }
+        name: { type: string }
+        address: { type: string }
+        phone: { type: string }
+        status: { type: string }
+
+    OrderItem:
+      type: object
+      properties:
+        id: { type: integer }
+        productId: { type: integer }
+        productName: { type: string }
+        quantity: { type: integer }
+        unit: { type: string }
+        price: { type: number }
+        discountAmount: { type: number }
+        taxPercent: { type: number }
+        taxAmount: { type: number }
+    OrderItemInput:
+      type: object
+      properties:
+        productId: { type: integer }
+        productName: { type: string }
+        quantity: { type: integer }
+        unit: { type: string }
+        price: { type: number }
+        discountAmount: { type: number, default: 0 }
+        taxPercent: { type: number, default: 0 }
+        taxAmount: { type: number, default: 0 }
+
+    ReceiveImage:
+      type: object
+      properties:
+        id: { type: integer }
+        type: { type: string, enum: [received, invoice] }
+        imageUrl: { type: string }
+        fileName: { type: string }
+
+    OrderSupplier:
+      type: object
+      properties:
+        id: { type: integer }
+        orderId: { type: integer }
+        supplierId: { type: integer }
+        supplierName: { type: string }
+        status: { type: string }
+        expectedDeliveryDate: { type: string, format: date }
+        actualDeliveryDate: { type: string, format: date, nullable: true }
+        confirmDate: { type: string, format: date, nullable: true }
+        note: { type: string }
+        totalAmount: { type: number }
+        taxAmount: { type: number }
+        paymentStatus: { type: string }
+        paidAmount: { type: number }
+        paidDate: { type: string, format: date, nullable: true }
+        receivedBy: { type: integer, nullable: true }
+        receivedDate: { type: string, format: date-time, nullable: true }
+        orderItems:
+          type: array
+          items: { $ref: '#/components/schemas/OrderItem' }
+        receiveImages:
+          type: array
+          items: { $ref: '#/components/schemas/ReceiveImage' }
+    OrderSupplierCreateInput:
+      type: object
+      properties:
+        supplierId: { type: integer }
+        orderItems:
+          type: array
+          items: { $ref: '#/components/schemas/OrderItemInput' }
+
+    Order:
+      type: object
+      properties:
+        id: { type: integer }
+        storeId: { type: integer }
+        storeName: { type: string }
+        status: { type: string }
+        orderDate: { type: string, format: date }
+        expectedDeliveryDate: { type: string, format: date, nullable: true }
+        totalItemCount: { type: integer }
+        totalAmount: { type: number }
+        createdBy: { type: integer }
+        createdDate: { type: string, format: date-time }
+        orderSuppliers:
+          type: array
+          items: { $ref: '#/components/schemas/OrderSupplier' }
+    OrderCreateInput:
+      type: object
+      required: [storeId, orderSuppliers]
+      properties:
+        storeId: { type: integer }
+        expectedDeliveryDate: { type: string, format: date, nullable: true }
+        orderSuppliers:
+          type: array
+          items: { $ref: '#/components/schemas/OrderSupplierCreateInput' }

@@ -1,0 +1,33 @@
+# Build
+bin/
+obj/
+out/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+*.sln.iml
+
+# User-specific
+appsettings.Development.json
+appsettings.*.local.json
+*.db
+*.db-shm
+*.db-wal
+
+# Secrets (không đẩy connection string nhạy cảm)
+# appsettings.json có thể giữ mẫu; mỗi dev copy appsettings.Development.json local
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs
+logs/
+*.log
